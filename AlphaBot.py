@@ -9,8 +9,7 @@ import os
 import datetime
 import sys
 global boehmCode
-#boehmCode=raw_input('Gear or Boiler? g/b ')
-############NETWORKING############
+
 import socket
 from networktables import NetworkTables as nt
 import logging
@@ -28,7 +27,7 @@ while 1:
 
 nt.initialize(server=ip)
 sd = nt.getTable("SmartDashboard")
-##################################
+
 
 count = 0
 frameCount = 0
@@ -42,10 +41,7 @@ camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(480,368))
 time.sleep(0.1)
 
-#############################################
-##Calc Distance to each gear target and calculate the angle##
-#############################################
-def calcDistance(center,cnts,width):##angle cam down 5 deg for gears
+def calcDistance(center,cnts,width):
     try:
         global start
         disHorizontalPixels = 240-center
@@ -62,7 +58,7 @@ def calcDistance(center,cnts,width):##angle cam down 5 deg for gears
             disHorizontal=float(disHorizontal)
             if disHorizontal<0:
                 #print("neg")
-                disHorizontal=disHorizontal-6#adjust 5.25 if field is not accurate (disatnce between tapes - 2in)/2
+                disHorizontal=disHorizontal-6
             else:
                 #print("pos")
                 disHorizontal=disHorizontal+6
@@ -98,10 +94,8 @@ def calcDistance(center,cnts,width):##angle cam down 5 deg for gears
     except:
         pass
     
-#############################################
-##Calc Distance to each boiler target and calculate the angle##
-#############################################
-def calcDistanceB(centerX, height, maxY,minY,width):##angle cam down up 20 deg for gears
+
+def calcDistanceB(centerX, height, maxY,minY,width):
     #try:
     pi = 3.1415926535897932384626433832795028841
     '''angle = 60
@@ -134,11 +128,7 @@ def calcDistanceB(centerX, height, maxY,minY,width):##angle cam down up 20 deg f
         #return (0,0)
         #print 'err'
         #pass
-#############################################
-##Calc ##     
-#############################################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 
 def calcProperties(cnts):
     global boehmCode
@@ -211,8 +201,6 @@ def calcProperties(cnts):
                 calcGear(cnts, minX2, maxX1, minY2, maxY2, minY1, maxY1, minX1)
                 return
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     if len(cnts)==1:
         #print("one obj")
         minX1 = min(a[0][0] for a in cnts[0])#Min X of Obj 1
@@ -225,9 +213,7 @@ def calcProperties(cnts):
         maxY2 = max(y[0][1] for y in cnts[0])#Max Y of Obj 2
         xAvg1 = (minX1+maxX2)/2
         xAvg2 = (minX1+maxX2)/2
-        
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
         if sd.getString('Pi_Stuff')=="b":        
             #print('BOILER')
             #cv2.imshow("mask", mask)
@@ -239,15 +225,8 @@ def calcProperties(cnts):
             calcGear(cnts, minX1, maxX2, minY1, maxY1, minY2, maxY2, minX2)
             return
 
-#############################################
-##Calc Boiler##
-#############################################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#$$$$$$$$$$$$$$$$$$$$$$$$
 def calcBoiler(cnts, minX1,maxX2, minY1, maxY1, minY2, maxY2, minX2, maxX1):
     if maxY1<minY2:
-        ###print('switching y\'s')
-        #switch mins and maxes y's
         minY2 = min(b[0][1] for b in cnts[1])
         maxY1 = max(y[0][1] for y in cnts[0])
         
@@ -304,15 +283,8 @@ def calcBoiler(cnts, minX1,maxX2, minY1, maxY1, minY2, maxY2, minX2, maxX1):
         #print('ERR: boiler')
         #pass
 
-#############################################
-##Calc Gear##
-#############################################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 def calcGear(cnts, minX, maxX, minY1, maxY1, minY2, maxY2, minX2):
     if maxX<minX and len(cnts)==2:
-        ###print('switching x\'s')
-        #switch mins and maxes for x's
         minX = min(a[0][0] for a in cnts[1])
         maxX = min(x[0][0] for x in cnts[0])
 
@@ -338,23 +310,15 @@ def calcGear(cnts, minX, maxX, minY1, maxY1, minY2, maxY2, minX2):
     
     #return (minX,maxX,minY,maxY,height)
     return
-##############################################
-################### MAIN #####################
-##############################################
 
-# capture frames from the camera+
-#start = time.time()
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     start = time.time()
     frameCount = frameCount + 1
     sd.putNumber('Frame Count', frameCount)
-    # grab the raw NumPy array representing the image, then initialize the timestamp
-    # and occupied/unoccupied text
     image = frame.array
     #sd.putNumber('Gear Finder', 100)
     #sd.putNumber('GearTarget or BoilerTarget',100)
     #if sd.getNumber('GearTarget or BoilerTarget') != 1:
-    # show the frame
     hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
     '''
     hueMin = sd.getNumber('Hue Min')
@@ -367,9 +331,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     high=np.array([hueMax,satMax,valMax])
     '''
 
-##############################################
-################### Adujst Hsv values #####################
-##############################################
+
     if sd.getString('Pi_Stuff')=="g":
         low=np.array([65,10,180])#GEAR green 50,50,150 or 25,100,200  50,75,100
         high=np.array([90,255,255])#GEAR green 100.255,255 or 85-255-255
@@ -419,8 +381,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     key = cv2.waitKey(1) & 0xFF
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 ##    try:
-##            ####Test the area of the contours and make sure they are the relective tape if
-##            #### too small then delete that contour
+##            
 ##        too_small=[]
 ##        
 ##        for ct in range(len(cnts)):
